@@ -1,7 +1,7 @@
 #include <cstdint> 
 #include <iostream>
+#include <fstream>
 #include <cmath>
-#include <fstream> 
 using namespace std;
 
 class Vector {
@@ -81,32 +81,7 @@ class Primitive {
 		virtual Vector shade(Hit h) = 0;
 };
 
-uint16_t im_size = 512;
-
-struct BMPFileHeader {
-    char bitmapSignatureBytes[2];
-    uint32_t sizeOfBitmapFile;
-    uint32_t reservedBytes;
-    uint32_t pixelDataOffset;
-};
-
-BMPFileHeader bmpfileheader = {{'B', 'M'}, 54 + im_size * im_size, 0, 54};
-
-struct BMPInfoHeader {
-    uint32_t sizeOfThisHeader;
-    int32_t width;
-    int32_t height;
-    uint16_t numberOfColorPlanes;
-    uint16_t colorDepth;
-    uint32_t compressionMethod;
-    uint32_t rawBitmapDataSize;
-    int32_t horizontalResolution;
-    int32_t verticalResolution;
-    uint32_t colorTableEntries;
-    uint32_t importantColors;
-};
-
-BMPInfoHeader bmpinfoheader = {40,im_size,im_size,1,24,0,0,3780,3780,0,0};
+uint16_t im_size = 256;
 
 struct Pixel {
 	uint8_t b;
@@ -116,25 +91,25 @@ struct Pixel {
 
 Pixel p = {100,100,255};
 
-void makeBMP() {
-	ofstream fout("output.bmp", ios::binary);
-	fout.write((char *) &bmpfileheader, 14);
-	fout.write((char *) &bmpinfoheader, 40);
-	size_t pc = im_size * im_size;
-	for (int i = 0; i < pc; i++) {
-        fout.write((char *) &p, 3);
-   	}
-	fout.close();
-}
-
 int main() {
-	int img[im_size][im_size][3];
+	uint8_t im[im_size][im_size];
 	for (int i = 0; i < im_size; i++) {
 		for (int j = 0; j < im_size; j++) {
-		img[i][j][2] = 200;
-		img[i][j][1] = 0;
-		img[i][j][0] = 0;
+			im[i][j] = i * j;
 		}
 	}
-	makeBMP();
+
+	ofstream myfile;
+	myfile.open("o.ppm");
+	myfile << "P3 " << im_size << " " << im_size << " 255";
+	for (int i = 0; i < im_size; i++) {
+		myfile << "\n";
+		for (int j = 0; j < im_size; j++) {
+			myfile << unsigned(im[i][j]) << " "; 
+			myfile << unsigned(im[i][j]) << " "; 
+			myfile << unsigned(im[i][j]) << " "; 
+		}
+	}
+	myfile.close();
+	return 0;
 }
